@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>Assignment1</AssemblyName>
+    <RootNamespace>Assignment1</RootNamespace>
+    <StartupObject>Assignment1.RailwayCrossingTest</StartupObject>
+  </PropertyGroup>
+
+</Project>

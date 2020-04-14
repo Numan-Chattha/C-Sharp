@@ -7,28 +7,28 @@ namespace Assignment1
 
     class TrainSignal {
 
-        public delegate void TrainSignalEventHandler(object sender, string eventData);
+        public delegate void TrainSignalEventHandler(object sender, string eventData,RailwayCrossingLogger railwayCrossingLogger);
         public event TrainSignalEventHandler SignalChanged;
         public string Name { get; set; }
         public TrainSignal(string name) {
             this.Name = name;
         }
-        internal virtual void OnSignalChanged(string eventDetails,string train) {
+        internal virtual void OnSignalChanged(string eventDetails,string train,RailwayCrossingLogger railwayCrossingLogger) {
             Console.WriteLine("{0}({1}-{2})",eventDetails,this.Name,train);
-            SignalChanged?.Invoke(this, eventDetails);
+            SignalChanged?.Invoke(this, eventDetails,railwayCrossingLogger);
         }
 
     }
 
     class Car
     {
-        private readonly string name;
+        private readonly string _name;
         private TrainSignal _signal;
 
         public Car(TrainSignal signal,string name) {
             this._signal = signal;
             signal.SignalChanged += SignalChanged;
-            this.name = name;
+            this._name = name;
         }
 
         public TrainSignal Signal {
@@ -40,28 +40,38 @@ namespace Assignment1
                 this._signal.SignalChanged += SignalChanged;
             }
         }
-        public  void SignalChanged(object sender, string eventData)
+
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+        }
+
+        public  void SignalChanged(object sender, string eventData,RailwayCrossingLogger railwayCrossingLogger)
         {
             /*Console.WriteLine("Signal Changed.");*/
-            if (eventData == EventListener.INCONMMING)
+            if (eventData == RailwayCrossingTest.INCONMMING)
             {
                 this.stop();
             }
             else {
-                this.Start(); 
+                this.Start();
+                railwayCrossingLogger.AddDetailsToLogger(this);
                 this._signal.SignalChanged -= SignalChanged;
             }
         }
         private void stop() {
-            Console.WriteLine("Stopping {0}",name);
+            Console.WriteLine("Stopping {0}",_name);
         }
         private void Start()
         {
-            Console.WriteLine("Moving {0}", name);
+            Console.WriteLine("Moving {0}", _name);
         }
     }
 
-    class EventListener {
+    class RailwayCrossingTest {
 
         const string Train_Incomming = "TRAIN_INCONMMING";
         const string Track_Clear = "TRACK_CLEAR";
@@ -78,30 +88,33 @@ namespace Assignment1
             Car car1 = new Car(railwayCrossing1,"car1");
             Car car2 = new Car(railwayCrossing1, "car2");
             Car car3 = new Car(railwayCrossing2, "car3");
+            RailwayCrossingLogger railwayCrossingLogger = RailwayCrossingLogger.Instance;
             //Incomming Train1 at crossing#1
-            railwayCrossing1.OnSignalChanged(INCONMMING, TRAIN_1);
+            railwayCrossing1.OnSignalChanged(INCONMMING, TRAIN_1, railwayCrossingLogger);
             Thread.Sleep(1000);
             //Incomming Train2 at crossing#2
-            railwayCrossing2.OnSignalChanged(INCONMMING, TRAIN_2);
+            railwayCrossing2.OnSignalChanged(INCONMMING, TRAIN_2, railwayCrossingLogger);
             Thread.Sleep(3000);
             //Train2 Crossed crossing#2 Clear
-            railwayCrossing2.OnSignalChanged(Track_Clear, TRAIN_2);
+            railwayCrossing2.OnSignalChanged(Track_Clear, TRAIN_2, railwayCrossingLogger);
             Thread.Sleep(1000);
             //Train1 Crossed crossing#1 Clear
-            railwayCrossing1.OnSignalChanged(Track_Clear, TRAIN_1);
+            railwayCrossing1.OnSignalChanged(Track_Clear, TRAIN_1, railwayCrossingLogger);
 
 
 
 
-            railwayCrossing2.OnSignalChanged(INCONMMING, TRAIN_1);
-            railwayCrossing2.OnSignalChanged(Track_Clear, TRAIN_1);
+            railwayCrossing2.OnSignalChanged(INCONMMING, TRAIN_1, railwayCrossingLogger);
+            railwayCrossing2.OnSignalChanged(Track_Clear, TRAIN_1, railwayCrossingLogger);
             car3.Signal = railwayCrossing1;
 
             Thread.Sleep(1000);
-            railwayCrossing1.OnSignalChanged(INCONMMING, TRAIN_2);
+            railwayCrossing1.OnSignalChanged(INCONMMING, TRAIN_2, railwayCrossingLogger);
             Thread.Sleep(3000);
             //Train2 Crossed crossing#1 Clear
-            railwayCrossing1.OnSignalChanged(Track_Clear, TRAIN_2);
+            railwayCrossing1.OnSignalChanged(Track_Clear, TRAIN_2, railwayCrossingLogger);
+
+            railwayCrossingLogger.PrintLoggerDetails();
 
         }
 
